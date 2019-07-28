@@ -11,6 +11,7 @@
 #define DBC_HEADER_SSIZE_SIZE sizeof(uint32_t)
 
 typedef struct dbc_header_t dbc_header_t;
+typedef struct dbc_record_t dbc_record_t;
 
 struct dbc_header_t {
   char signature[5];  // always 'WDBC'
@@ -25,6 +26,8 @@ typedef struct {
   dbc_header_t header;
 } dbc_file_t;
 
-int dbc_open(char *file, dbc_file_t* dbc);
+void dbc_close(dbc_file_t *dbc);
+int dbc_open(char *file, dbc_file_t *dbc);
+int dbc_read_record(dbc_file_t *dbc, int (*callback)(dbc_file_t *dbc, unsigned char *record));
 
 #endif

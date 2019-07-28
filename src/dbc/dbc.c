@@ -1,9 +1,14 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "dbc.h"
 
 int dbc_read_header(dbc_file_t *dbc);
+
+void dbc_close(dbc_file_t *dbc) {
+  fclose(dbc->fd);
+}
 
 int dbc_open(char *file, dbc_file_t *dbc) {
   dbc->fd = fopen(file, "r");
@@ -16,13 +21,12 @@ int dbc_open(char *file, dbc_file_t *dbc) {
     return -2;
   }
 
-  fclose(dbc->fd);
   return 0;
 }
 
 int dbc_read_header(dbc_file_t *dbc) {
-  char header[DBC_HEADER_SIZE];
-  char *p = &header[0];
+  unsigned char header[DBC_HEADER_SIZE];
+  unsigned char *p = &header[0];
   memset(header, 0, DBC_HEADER_SIZE);
 
   if(fread(header, 1, DBC_HEADER_SIZE, dbc->fd) != DBC_HEADER_SIZE) {
@@ -54,4 +58,14 @@ int dbc_read_header(dbc_file_t *dbc) {
     DBC_HEADER_SSIZE_SIZE);
 
   return 0;
+}
+
+int dbc_read_record(dbc_file_t *dbc, int (*callback)(dbc_file_t *dbc, unsigned char *record)) {
+  unsigned char record[dbc->header.rsize];
+  memset(&record, 0, dbc->header.rsize);
+
+  if(fread(record, 1, dbc->header.rsize, dbc->fd) != dbc->header.rsize)
+    return -1;
+
+  return (*callback)(dbc, record);
 }
