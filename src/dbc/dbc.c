@@ -3,29 +3,29 @@
 
 #include "dbc.h"
 
-int read_dbc_header(FILE *fd, dbc_file_t *dbc);
+int dbc_read_header(dbc_file_t *dbc);
 
-int read_dbc(char *file, dbc_file_t *dbc) {
-  FILE *fd = fopen(file, "r");
+int dbc_open(char *file, dbc_file_t *dbc) {
+  dbc->fd = fopen(file, "r");
 
-  if(!fd)
+  if(!dbc->fd)
     return -1;
 
-  if(read_dbc_header(fd, dbc) != 0) {
-    fclose(fd);
+  if(dbc_read_header(dbc) != 0) {
+    fclose(dbc->fd);
     return -2;
   }
 
-  fclose(fd);
+  fclose(dbc->fd);
   return 0;
 }
 
-int read_dbc_header(FILE *fd, dbc_file_t *dbc) {
+int dbc_read_header(dbc_file_t *dbc) {
   char header[DBC_HEADER_SIZE];
   char *p = &header[0];
   memset(header, 0, DBC_HEADER_SIZE);
 
-  if(fread(header, 1, DBC_HEADER_SIZE, fd) != DBC_HEADER_SIZE) {
+  if(fread(header, 1, DBC_HEADER_SIZE, dbc->fd) != DBC_HEADER_SIZE) {
     return -1;
   }
 

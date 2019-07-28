@@ -21,9 +21,10 @@ struct dbc_header_t {
 };
 
 typedef struct {
+  FILE *fd;
   dbc_header_t header;
 } dbc_file_t;
 
-int read_dbc(char *file, dbc_file_t* dbc);
+int dbc_open(char *file, dbc_file_t* dbc);
 
 #endif

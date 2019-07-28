@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
 
   fprintf(stdout, "Using %s\n", basename(config.dbc_file));
   memset(&dbc, 0, sizeof(dbc_file_t));
-  read_dbc(config.dbc_file, &dbc);
+  dbc_open(config.dbc_file, &dbc);
   fprintf(
     stdout, "%s: record count %d, field count %d, record size %d, string size %d\n",
     dbc.header.signature,
