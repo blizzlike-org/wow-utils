@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
 
   fprintf(stdout, "Using %s\n", filename);
   memset(&dbc, 0, sizeof(dbc_file_t));
-  if(dbc_open(config.dbc_file, &dbc) != 0)
+  if(dbc_open(&dbc, config.dbc_file) != 0)
     return 2;
 
   fprintf(

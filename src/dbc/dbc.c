@@ -10,7 +10,7 @@ void dbc_close(dbc_file_t *dbc) {
   fclose(dbc->fd);
 }
 
-int dbc_open(char *file, dbc_file_t *dbc) {
+int dbc_open(dbc_file_t *dbc, const unsigned char *file) {
   dbc->fd = fopen(file, "r");
 
   if(!dbc->fd)
