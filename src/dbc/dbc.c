@@ -60,6 +60,22 @@ int dbc_read_header(dbc_file_t *dbc) {
   return 0;
 }
 
+int dbc_read_int(dbc_file_t *dbc, unsigned char *record, int32_t *field) {
+  if(dbc->header.rsize < sizeof(int32_t))
+    return -1;
+
+  memcpy(field, record, sizeof(int32_t));
+  return 0;
+}
+
+int dbc_read_uint(dbc_file_t *dbc, unsigned char *record, uint32_t *field) {
+  if(dbc->header.rsize < sizeof(uint32_t))
+    return -1;
+
+  memcpy(field, record, sizeof(uint32_t));
+  return 0;
+}
+
 int dbc_read_record(dbc_file_t *dbc, int (*callback)(dbc_file_t *dbc, unsigned char *record)) {
   unsigned char record[dbc->header.rsize];
   memset(&record, 0, dbc->header.rsize);

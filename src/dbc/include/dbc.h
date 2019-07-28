@@ -28,6 +28,9 @@ typedef struct {
 
 void dbc_close(dbc_file_t *dbc);
 int dbc_open(char *file, dbc_file_t *dbc);
+
+int dbc_read_int(dbc_file_t *dbc, unsigned char *record, int32_t *field);
+int dbc_read_uint(dbc_file_t *dbc, unsigned char *record, uint32_t *field);
 int dbc_read_record(dbc_file_t *dbc, int (*callback)(dbc_file_t *dbc, unsigned char *record));
 
 #endif
