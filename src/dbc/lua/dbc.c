@@ -24,6 +24,7 @@ static void luaL_setfuncs(lua_State *L, const luaL_Reg *l, int nup) {
 
 typedef struct {
   dbc_file_t dbc;
+  const unsigned char *dbcfile;
 } ldbc_userdata_t;
 
 static int ldbc_close(lua_State *L) {
@@ -42,11 +43,19 @@ static int ldbc_get_header(lua_State *L) {
   return 5;
 }
 
+static int ldbc_get_record(lua_State *L) {
+  ldbc_userdata_t *udata = (ldbc_userdata_t *) lua_checkudata(L, 1, "dbc");
+  unsigned char *record =
+    (unsigned char *) lua_newuserdata(L, sizeof(udata->dbc.header.rsize));
+
+  dbc_read_record(&udata->dbc, record);
+}
+
 static int ldbc_open(lua_State *L) {
   ldbc_userdata_t *udata = (ldbc_userdata_t *) lua_newuserdata(L, sizeof(ldbc_userdata_t));
-  const unsigned char *dbcfile = luaL_checkstring(L, 1);
+  udata->dbcfile = luaL_checkstring(L, 1);
 
-  if(dbc_open(&udata->dbc, dbcfile) != 0) {
+  if(dbc_open(&udata->dbc, udata->dbcfile) != 0) {
     lua_pushnil(L);
     lua_pushstring(L, "no such file or directory");
     return 2;
@@ -69,6 +78,7 @@ int luaopen_dbc(lua_State *L) {
       { "__gc", ldbc_close },
       { "close", ldbc_close },
       { "get_header", ldbc_get_header },
+      { "get_record", ldbc_get_record },
       { NULL, NULL }
     };
     lua_pushvalue(L, -1);
