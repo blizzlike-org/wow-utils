@@ -10,13 +10,6 @@ void dbc_close(dbc_file_t *dbc) {
   fclose(dbc->fd);
 }
 
-void dbc_free_record(unsigned char *record) {
-  if(record != NULL) {
-    free(record);
-    record = NULL;
-  }
-}
-
 int dbc_open(dbc_file_t *dbc, const unsigned char *file) {
   dbc->fd = fopen(file, "r");
 
@@ -27,6 +20,8 @@ int dbc_open(dbc_file_t *dbc, const unsigned char *file) {
     fclose(dbc->fd);
     return -2;
   }
+
+  dbc->_iter_r = 0;
 
   return 0;
 }
@@ -84,14 +79,14 @@ int dbc_read_uint(dbc_file_t *dbc, unsigned char *record, uint32_t *field) {
 }
 
 int dbc_read_record(dbc_file_t *dbc, unsigned char *record) {
-  record = malloc(dbc->header.rsize);
-  memset(record, 0, dbc->header.rsize);
-
-  if(fread(record, 1, dbc->header.rsize, dbc->fd) != dbc->header.rsize) {
-    free(record);
-    record = NULL;
+  if(dbc->_iter_r >=  dbc->header.rcount)
     return -1;
-  }
+
+  memset(record, 0, dbc->header.rsize);
+  if(fread(record, 1, dbc->header.rsize, dbc->fd) != dbc->header.rsize)
+    return -2;
+
+  dbc->_iter_r += 1;
 
   return 0;
 }

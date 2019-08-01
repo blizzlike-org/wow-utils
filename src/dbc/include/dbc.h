@@ -24,6 +24,7 @@ struct dbc_header_t {
 typedef struct {
   FILE *fd;
   dbc_header_t header;
+  uint32_t _iter_r;
 } dbc_file_t;
 
 void dbc_close(dbc_file_t *dbc);

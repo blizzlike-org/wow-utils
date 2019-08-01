@@ -1,6 +1,8 @@
 #include <lua.h>
 #include <lauxlib.h>
 
+#include <string.h>
+
 #include "dbc.h"
 
 #if LUA_VERSION_NUM < 502
@@ -31,6 +33,9 @@ typedef struct {
   dbc_file_t *dbc;
   unsigned char record[];
 } ldbc_record_userdata_t;
+
+static int ldbc_get_int(lua_State *L);
+static int ldbc_get_uint(lua_State *L);
 
 static int ldbc_close(lua_State *L) {
   ldbc_userdata_t *udata = (ldbc_userdata_t *) luaL_checkudata(L, 1, "dbc");
@@ -67,10 +72,15 @@ static int ldbc_get_record(lua_State *L) {
   ldbc_record_userdata_t *udata_r =
     (ldbc_record_userdata_t *) lua_newuserdata(L, sizeof(ldbc_record_userdata_t) + udata->dbc.header.rsize);
 
-  if(dbc_read_record(&udata->dbc, udata_r->record) != 0) {
-    lua_pushnil(L);
-    lua_pushstring(L, "cannot read record from dbc");
-    return 2;
+  switch(dbc_read_record(&udata->dbc, udata_r->record)) {
+    case -2:
+      lua_pushnil(L);
+      lua_pushstring(L, "cannot read record from dbc");
+      return 2;
+    case -1:
+      lua_pushnil(L);
+      lua_pushstring(L, "no records left");
+      return 2;
   }
 
   udata_r->dbc = &udata->dbc;
@@ -97,6 +107,7 @@ static int ldbc_get_uint(lua_State *L) {
 
 static int ldbc_open(lua_State *L) {
   ldbc_userdata_t *udata = (ldbc_userdata_t *) lua_newuserdata(L, sizeof(ldbc_userdata_t));
+  memset(&udata->dbc, 0, sizeof(dbc_file_t));
   udata->dbcfile = luaL_checkstring(L, 1);
 
   if(dbc_open(&udata->dbc, udata->dbcfile) != 0) {
