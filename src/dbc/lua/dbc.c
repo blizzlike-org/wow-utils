@@ -31,7 +31,7 @@ typedef struct {
 
 typedef struct {
   dbc_file_t *dbc;
-  unsigned char record[];
+  dbc_record_t record;
 } ldbc_record_userdata_t;
 
 static int ldbc_get_int(lua_State *L);
@@ -57,7 +57,7 @@ static int ldbc_get_int(lua_State *L) {
   ldbc_record_userdata_t *udata =
     (ldbc_record_userdata_t *) luaL_checkudata(L, 1, "dbcrecord");
   int32_t field = 0;
-  if(dbc_read_int(udata->dbc, udata->record, &field) != 0) {
+  if(dbc_read_int(udata->dbc, &udata->record, &field) != 0) {
     lua_pushnil(L);
     lua_pushstring(L, "cannot read int from record");
     return 2;
@@ -72,7 +72,7 @@ static int ldbc_get_record(lua_State *L) {
   ldbc_record_userdata_t *udata_r =
     (ldbc_record_userdata_t *) lua_newuserdata(L, sizeof(ldbc_record_userdata_t) + udata->dbc.header.rsize);
 
-  switch(dbc_read_record(&udata->dbc, udata_r->record)) {
+  switch(dbc_read_record(&udata->dbc, &udata_r->record)) {
     case -2:
       lua_pushnil(L);
       lua_pushstring(L, "cannot read record from dbc");
@@ -95,7 +95,7 @@ static int ldbc_get_uint(lua_State *L) {
   ldbc_record_userdata_t *udata =
     (ldbc_record_userdata_t *) luaL_checkudata(L, 1, "dbcrecord");
   uint32_t field = 0;
-  if(dbc_read_uint(udata->dbc, udata->record, &field) != 0) {
+  if(dbc_read_uint(udata->dbc, &udata->record, &field) != 0) {
     lua_pushnil(L);
     lua_pushstring(L, "cannot read uint from record");
     return 2;

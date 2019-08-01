@@ -62,31 +62,39 @@ int dbc_read_header(dbc_file_t *dbc) {
   return 0;
 }
 
-int dbc_read_int(dbc_file_t *dbc, unsigned char *record, int32_t *field) {
-  if(dbc->header.rsize < sizeof(int32_t))
+int dbc_read_int(dbc_file_t *dbc, dbc_record_t *record, int32_t *field) {
+  if((dbc->header.rsize - record->_offset) < sizeof(int32_t))
     return -1;
 
-  memcpy(field, record, sizeof(int32_t));
+  memcpy(field, record->p + record->_offset, sizeof(int32_t));
+  record->_offset += sizeof(int32_t);
   return 0;
 }
 
-int dbc_read_uint(dbc_file_t *dbc, unsigned char *record, uint32_t *field) {
-  if(dbc->header.rsize < sizeof(uint32_t))
-    return -1;
-
-  memcpy(field, record, sizeof(uint32_t));
-  return 0;
-}
-
-int dbc_read_record(dbc_file_t *dbc, unsigned char *record) {
+int dbc_read_record(dbc_file_t *dbc, dbc_record_t *record) {
   if(dbc->_iter_r >=  dbc->header.rcount)
     return -1;
 
-  memset(record, 0, dbc->header.rsize);
-  if(fread(record, 1, dbc->header.rsize, dbc->fd) != dbc->header.rsize)
+  memset(record, 0, dbc_sizeof_record(dbc));
+  if(fread(record->payload, 1, dbc->header.rsize, dbc->fd) != dbc->header.rsize)
     return -2;
 
   dbc->_iter_r += 1;
+  record->_offset = 0;
+  record->p = &record->payload[0];
 
   return 0;
+}
+
+int dbc_read_uint(dbc_file_t *dbc, dbc_record_t *record, uint32_t *field) {
+  if((dbc->header.rsize - record->_offset) < sizeof(uint32_t))
+    return -1;
+
+  memcpy(field, record->p + record->_offset, sizeof(uint32_t));
+  record->_offset += sizeof(uint32_t);
+  return 0;
+}
+
+uint32_t dbc_sizeof_record(dbc_file_t *dbc) {
+  return sizeof(dbc_record_t) + dbc->header.rsize;
 }
