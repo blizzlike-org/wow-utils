@@ -7,7 +7,10 @@
 int dbc_read_header(dbc_file_t *dbc);
 
 void dbc_close(dbc_file_t *dbc) {
-  fclose(dbc->fd);
+  if(dbc->fd != NULL) {
+    fclose(dbc->fd);
+    dbc->fd = NULL;
+  }
 }
 
 int dbc_open(dbc_file_t *dbc, const unsigned char *file) {
@@ -82,6 +85,42 @@ int dbc_read_record(dbc_file_t *dbc, dbc_record_t *record) {
   dbc->_iter_r += 1;
   record->_offset = 0;
   record->p = &record->payload[0];
+  return 0;
+}
+
+int dbc_read_string(dbc_file_t *dbc, dbc_stringblock_t *stringblock, unsigned char *field) {
+  int l = dbc_sizeof_string(stringblock);
+
+  if(l > dbc->header.ssize)
+    return -1;
+
+  if(stringblock->_offset >= dbc->header.ssize)
+    return -2;
+
+  memcpy(field, stringblock->p + stringblock->_offset, l);
+  stringblock->_offset += l;
+  return 0;
+}
+
+int dbc_read_stringblock(dbc_file_t *dbc, dbc_stringblock_t *stringblock) {
+  long int current = ftell(dbc->fd);
+  int i, j;
+  fseek(dbc->fd, DBC_HEADER_SIZE + dbc->header.rcount * dbc->header.rsize, SEEK_SET);
+
+  memset(stringblock, 0, sizeof(dbc_stringblock_t) + dbc->header.ssize);
+  if(fread(stringblock->payload, 1, dbc->header.ssize, dbc->fd) != dbc->header.ssize) {
+    fseek(dbc->fd, current, SEEK_SET);
+    return -1;
+  }
+
+  for(i = 0, j = 0; i <= dbc->header.ssize; ++i)
+    if(stringblock->payload[i] == '\0')
+      ++j;
+
+  fseek(dbc->fd, current, SEEK_SET);
+  stringblock->_offset = 0;
+  stringblock->fcount = j;
+  stringblock->p = &stringblock->payload[0];
 
   return 0;
 }
@@ -97,4 +136,16 @@ int dbc_read_uint(dbc_file_t *dbc, dbc_record_t *record, uint32_t *field) {
 
 uint32_t dbc_sizeof_record(dbc_file_t *dbc) {
   return sizeof(dbc_record_t) + dbc->header.rsize;
+}
+
+uint32_t dbc_sizeof_string(dbc_stringblock_t *stringblock) {
+  int i = stringblock->_offset;
+  while(stringblock->payload[i] != '\0')
+    ++i;
+
+  return i + 1 - stringblock->_offset;
+}
+
+uint32_t dbc_sizeof_stringblock(dbc_file_t *dbc) {
+  return sizeof(dbc_stringblock_t) + dbc->header.ssize;
 }

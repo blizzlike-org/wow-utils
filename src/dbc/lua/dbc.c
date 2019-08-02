@@ -34,6 +34,11 @@ typedef struct {
   dbc_record_t record;
 } ldbc_record_userdata_t;
 
+typedef struct {
+  dbc_file_t *dbc;
+  dbc_stringblock_t stringblock;
+} ldbc_stringblock_userdata_t;
+
 static int ldbc_get_int(lua_State *L);
 static int ldbc_get_uint(lua_State *L);
 
@@ -91,6 +96,46 @@ static int ldbc_get_record(lua_State *L) {
   return 1;
 }
 
+static int ldbc_get_string(lua_State *L) {
+  ldbc_stringblock_userdata_t *udata =
+    (ldbc_stringblock_userdata_t *) luaL_checkudata(L, 1, "dbcstringblock");
+  uint32_t l = dbc_sizeof_string(&udata->stringblock);
+  unsigned char field[l];
+  if(dbc_read_string(udata->dbc, &udata->stringblock, &field[0]) != 0) {
+    lua_pushnil(L);
+    lua_pushstring(L, "cannot read string from stringblock");
+    return 2;
+  }
+
+  lua_pushstring(L, field);
+  return 1;
+}
+
+static int ldbc_get_stringblock(lua_State *L) {
+  ldbc_userdata_t *udata = (ldbc_userdata_t *) luaL_checkudata(L, 1, "dbc");
+  ldbc_stringblock_userdata_t *udata_s =
+    (ldbc_stringblock_userdata_t *) lua_newuserdata(L,
+      sizeof(ldbc_stringblock_userdata_t) + udata->dbc.header.ssize);
+
+  switch(dbc_read_stringblock(&udata->dbc, &udata_s->stringblock)) {
+    case -2:
+      lua_pushnil(L);
+      lua_pushstring(L, "cannot read stringblock from dbc");
+      return 2;
+    case -1:
+      lua_pushnil(L);
+      lua_pushstring(L, "no string left");
+      return 2;
+  }
+
+  udata_s->dbc = &udata->dbc;
+
+  luaL_getmetatable(L, "dbcstringblock");
+  lua_setmetatable(L, -2);
+
+  return 1;
+}
+
 static int ldbc_get_uint(lua_State *L) {
   ldbc_record_userdata_t *udata =
     (ldbc_record_userdata_t *) luaL_checkudata(L, 1, "dbcrecord");
@@ -134,6 +179,7 @@ int luaopen_dbc(lua_State *L) {
       { "close", ldbc_close },
       { "get_header", ldbc_get_header },
       { "get_record", ldbc_get_record },
+      { "get_stringblock", ldbc_get_stringblock },
       { NULL, NULL }
     };
     lua_pushvalue(L, -1);
@@ -150,6 +196,16 @@ int luaopen_dbc(lua_State *L) {
     lua_pushvalue(L, -1);
     lua_setfield(L, -2, "__index");
     luaL_setfuncs(L, dbcrecord_methods, 0);
+  }
+
+  if(luaL_newmetatable(L, "dbcstringblock")) {
+    static struct luaL_Reg dbcstringblock_methods[] = {
+      { "get_string", ldbc_get_string },
+      { NULL, NULL }
+    };
+    lua_pushvalue(L, -1);
+    lua_setfield(L, -2, "__index");
+    luaL_setfuncs(L, dbcstringblock_methods, 0);
   }
 
   luaL_newlib(L, ldbc);
