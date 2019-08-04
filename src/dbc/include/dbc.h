@@ -39,6 +39,7 @@ void dbc_close(dbc_file_t *dbc);
 int dbc_open(dbc_file_t *dbc, const unsigned char *file);
 
 int dbc_read_int(dbc_file_t *dbc, dbc_record_t *record, int32_t *field);
+int dbc_read_raw(dbc_file_t *dbc, dbc_record_t *record, unsigned char *field);
 int dbc_read_record(dbc_file_t *dbc, dbc_record_t *record);
 int dbc_read_string(dbc_file_t *dbc, dbc_stringblock_t *stringblock, unsigned char *field);
 int dbc_read_stringblock(dbc_file_t *dbc, dbc_stringblock_t *stringblock);

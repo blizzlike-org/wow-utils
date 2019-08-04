@@ -74,6 +74,16 @@ int dbc_read_int(dbc_file_t *dbc, dbc_record_t *record, int32_t *field) {
   return 0;
 }
 
+int dbc_read_raw(dbc_file_t *dbc, dbc_record_t *record, unsigned char *field) {
+  if((dbc->header.rsize - record->_offset) < sizeof(char) * 4)
+    return -1;
+
+  memset(field, 0, sizeof(char) * 5);
+  memcpy(field, record->p + record->_offset, sizeof(char) * 4);
+  record->_offset += sizeof(char) * 4;
+  return 0;
+}
+
 int dbc_read_record(dbc_file_t *dbc, dbc_record_t *record) {
   if(dbc->_iter_r >=  dbc->header.rcount)
     return -1;

@@ -72,6 +72,26 @@ static int ldbc_get_int(lua_State *L) {
   return 1;
 }
 
+static int ldbc_get_raw(lua_State *L) {
+  ldbc_record_userdata_t *udata = 
+    (ldbc_record_userdata_t *) luaL_checkudata(L, 1, "dbcrecord");
+  unsigned char field[5], hex[9];
+  int i;
+  if(dbc_read_raw(udata->dbc, &udata->record, &field[0]) != 0) {
+    lua_pushnil(L);
+    lua_pushstring(L, "cannot read raw values from record");
+    return 2;
+  }
+
+  memset(&hex[0], 0, sizeof(char) * 9);
+  for(i = 0; i < 4; ++i) {
+    sprintf(hex + 2 * i, "%02x", field[i]);
+  }
+
+  lua_pushstring(L, hex);
+  return 1;
+}
+
 static int ldbc_get_record(lua_State *L) {
   ldbc_userdata_t *udata = (ldbc_userdata_t *) luaL_checkudata(L, 1, "dbc");
   ldbc_record_userdata_t *udata_r =
@@ -190,6 +210,7 @@ int luaopen_dbc(lua_State *L) {
   if(luaL_newmetatable(L, "dbcrecord")) {
     static struct luaL_Reg dbcrecord_methods[] = {
       { "get_int", ldbc_get_int },
+      { "get_raw", ldbc_get_raw },
       { "get_uint", ldbc_get_uint },
       { NULL, NULL }
     };
