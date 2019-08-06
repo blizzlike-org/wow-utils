@@ -1,33 +1,27 @@
-CFLAGS += -fPIC
-
 ifndef LUA
-LUA = lua5.3
+LUA = lua53
 endif
 
-INC += -I./src/dbc/include
-ifdef LUA_INCDIR
-INC += -I${LUA_INCDIR}
-else
-INC += -I/usr/include/${LUA}
-endif
+CFLAGS += -fpic -I./src/dbc/include
+prefix ?= /usr
+bindir ?= ${prefix}/bin
+interpreter ?= /usr/bin/env lua$(shell pkg-config --variable=V ${LUA})
 
-all: dbccat dbc.so
+all: dbc.so
 
 dbc.o:
-	${CC} -c ./src/dbc/dbc.c ${CFLAGS} ${INC}
-
-dbctypes.o:
-	${CC} -c ./src/dbc/dbctypes.c -I./src/dbc/include
-
-dbccat: dbc.o dbctypes.o
-	${CC} -c ./src/dbc/cat.c -I./src/dbc/include
-	${CC} -o ./dbccat ./cat.o ./dbc.o ./dbctypes.o ${LDFLAGS}
+	${CC} -c ./src/dbc/dbc.c ${CFLAGS}
 
 # lua bindings
 
 dbc.so: dbc.o
-	${CC} -o ./luadbc.o -c ./src/dbc/lua/dbc.c ${CFLAGS} ${INC}
-	${CC} -o ./dbc.so ./luadbc.o ./dbc.o ${CFLAGS} ${INC} -shared ${LDFLAGS} -l${LUA}
+	${CC} -o ./luadbc.o -c ./src/dbc/lua/dbc.c ${CFLAGS} $(shell pkg-config --cflags ${LUA})
+	${CC} -o ./dbc.so ./luadbc.o ./dbc.o ${CFLAGS} -shared ${LDFLAGS} $(shell pkg-config --libs ${LUA})
+
+install:
+	install -D dbc.so ${DESTDIR}$(shell pkg-config --variable=INSTALL_CMOD ${LUA})/dbc.so
+	install -D -m 0755 src/dbc/dbccat.lua ${DESTDIR}${bindir}/dbccat
+	sed -i "s_/usr/bin/env lua_${interpreter}_" ${DESTDIR}${bindir}/dbccat
 
 clean:
-	rm -rf ./*.o ./*.so ./dbccat
+	rm -rf ./*.o ./*.so
