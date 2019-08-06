@@ -1,0 +1,27 @@
+pkgname="wow-utils-git"
+pkgver=r15.281d0da
+pkgrel=1
+pkgdesc="WoW client file inspection tools"
+arch=(i686 x86_64)
+url="https://www.blizzlike.org"
+license=("AGPL")
+makedepends=("lua51")
+source=("wow-utils-git::git+https://metagit.org/blizzlike/wow-utils.git")
+md5sums=("SKIP")
+
+LUA="lua"
+
+pkgver() {
+  cd "$pkgname"
+  printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+  cd $pkgname
+  make dbc.so
+}
+
+package() {
+  cd $pkgname
+  make DESTDIR=$pkgdir install
+}
