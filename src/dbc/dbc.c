@@ -34,13 +34,14 @@ int dbc_read_header(dbc_file_t *dbc) {
   unsigned char *p = &header[0];
   memset(header, 0, DBC_HEADER_SIZE);
 
-  if(fread(header, 1, DBC_HEADER_SIZE, dbc->fd) != DBC_HEADER_SIZE) {
+  if(dbc->fd == NULL)
     return -1;
-  }
 
-  if(strncmp(header, "WDBC", 4) != 0) {
+  if(fread(header, 1, DBC_HEADER_SIZE, dbc->fd) != DBC_HEADER_SIZE)
     return -2;
-  }
+
+  if(strncmp(header, "WDBC", 4) != 0)
+    return -3;
 
   memcpy(
     &dbc->header.signature, p,
@@ -66,8 +67,11 @@ int dbc_read_header(dbc_file_t *dbc) {
 }
 
 int dbc_read_int(dbc_file_t *dbc, dbc_record_t *record, int32_t *field) {
-  if((dbc->header.rsize - record->_offset) < sizeof(int32_t))
+  if(record->p == NULL)
     return -1;
+
+  if((dbc->header.rsize - record->_offset) < sizeof(int32_t))
+    return -2;
 
   memcpy(field, record->p + record->_offset, sizeof(int32_t));
   record->_offset += sizeof(int32_t);
@@ -75,8 +79,11 @@ int dbc_read_int(dbc_file_t *dbc, dbc_record_t *record, int32_t *field) {
 }
 
 int dbc_read_raw(dbc_file_t *dbc, dbc_record_t *record, unsigned char *field) {
-  if((dbc->header.rsize - record->_offset) < sizeof(char) * 4)
+  if(record->p == NULL)
     return -1;
+
+  if((dbc->header.rsize - record->_offset) < sizeof(char) * 4)
+    return -2;
 
   memset(field, 0, sizeof(char) * 5);
   memcpy(field, record->p + record->_offset, sizeof(char) * 4);
@@ -85,12 +92,15 @@ int dbc_read_raw(dbc_file_t *dbc, dbc_record_t *record, unsigned char *field) {
 }
 
 int dbc_read_record(dbc_file_t *dbc, dbc_record_t *record) {
-  if(dbc->_iter_r >=  dbc->header.rcount)
+  if(dbc->fd == NULL)
     return -1;
+
+  if(dbc->_iter_r >=  dbc->header.rcount)
+    return -2;
 
   memset(record, 0, dbc_sizeof_record(dbc));
   if(fread(record->payload, 1, dbc->header.rsize, dbc->fd) != dbc->header.rsize)
-    return -2;
+    return -3;
 
   dbc->_iter_r += 1;
   record->_offset = 0;

@@ -98,13 +98,17 @@ static int ldbc_get_record(lua_State *L) {
     (ldbc_record_userdata_t *) lua_newuserdata(L, sizeof(ldbc_record_userdata_t) + udata->dbc.header.rsize);
 
   switch(dbc_read_record(&udata->dbc, &udata_r->record)) {
-    case -2:
+    case -3:
       lua_pushnil(L);
       lua_pushstring(L, "cannot read record from dbc");
       return 2;
-    case -1:
+    case -2:
       lua_pushnil(L);
       lua_pushstring(L, "no records left");
+      return 2;
+    case -1:
+      lua_pushnil(L);
+      lua_pushstring(L, "invalid file handle");
       return 2;
   }
 
