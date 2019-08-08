@@ -131,7 +131,7 @@ int dbc_read_string(dbc_file_t *dbc, uint32_t offset, unsigned char *field, uint
   current = ftell(dbc->fd);
   fseek(dbc->fd, DBC_HEADER_SIZE + dbc->header.rcount * dbc->header.rsize + offset, SEEK_SET);
   memset(field, 0, l);
-  if(fread(field, 1, l, dbc->fd) != l) {
+  if(fread(field, 1, l - 1, dbc->fd) != l - 1) {
     fseek(dbc->fd, current, SEEK_SET);
     return -2;
   }
@@ -209,7 +209,7 @@ uint32_t dbc_strlen(dbc_file_t *dbc, uint32_t offset) {
   do {
     if(fread(&c, 1, sizeof(unsigned char), dbc->fd) != sizeof(unsigned char)) {
       fseek(dbc->fd, current, SEEK_SET);
-      return 0;
+      return i;
     }
 
     ++i;
