@@ -48,6 +48,10 @@ function _M.parse_record_blueprint(self, record, header, blueprint)
     local i = 0
     while i < v.count do
       local field, err
+      if v.type == "float" then
+        field, err = record:get_float()
+        field = string.format("%f", field)
+      end
       if v.type == "int32_t" then
         field, err = record:get_int()
         field = string.format("%i", field)

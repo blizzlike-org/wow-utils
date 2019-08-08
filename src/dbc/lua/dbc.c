@@ -48,6 +48,20 @@ static int ldbc_close(lua_State *L) {
   return 0;
 }
 
+static int ldbc_get_float(lua_State *L) {
+  ldbc_record_userdata_t *udata =
+    (ldbc_record_userdata_t *) luaL_checkudata(L, 1, "dbcrecord");
+  float field = 0;
+  if(dbc_read_float(udata->dbc, &udata->record, &field) != 0) {
+    lua_pushnil(L);
+    lua_pushstring(L, "cannot read float from record");
+    return 2;
+  }
+
+  lua_pushnumber(L, field);
+  return 1;
+}
+
 static int ldbc_get_header(lua_State *L) {
   ldbc_userdata_t *udata = (ldbc_userdata_t *) luaL_checkudata(L, 1, "dbc");
   lua_pushstring(L, udata->dbc.header.signature);
@@ -236,6 +250,7 @@ int luaopen_dbc(lua_State *L) {
 
   if(luaL_newmetatable(L, "dbcrecord")) {
     static struct luaL_Reg dbcrecord_methods[] = {
+      { "get_float", ldbc_get_float },
       { "get_int", ldbc_get_int },
       { "get_raw", ldbc_get_raw },
       { "get_string", ldbc_get_string },

@@ -29,6 +29,18 @@ int dbc_open(dbc_file_t *dbc, const unsigned char *file) {
   return 0;
 }
 
+int dbc_read_float(dbc_file_t *dbc, dbc_record_t *record, float *field) {
+  if(record->p == NULL)
+    return -1;
+
+  if((dbc->header.rsize - record->_offset) < sizeof(float))
+    return -2;
+
+  memcpy(field, record->p + record->_offset, sizeof(float));
+  record->_offset += sizeof(float);
+  return 0;
+}
+
 int dbc_read_header(dbc_file_t *dbc) {
   unsigned char header[DBC_HEADER_SIZE];
   unsigned char *p = &header[0];
