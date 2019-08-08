@@ -22,7 +22,7 @@ install:
 	install -D dbc.so ${DESTDIR}$(shell pkg-config --variable=INSTALL_CMOD ${LUA})/dbc.so
 	install -D -m 0755 src/dbc/dbccat.lua ${DESTDIR}${bindir}/dbccat
 	sed -i "s_/usr/bin/env lua_${interpreter}_" ${DESTDIR}${bindir}/dbccat
-	install -D dbcspec/faction.dbc ${DESTDIR}$(shell pkg-config --variable=INSTALL_LMOD ${LUA})/dbcspec/faction.lua
+	install -D -t ${DESTDIR}$(shell pkg-config --variable=INSTALL_LMOD ${LUA})/dbcspec dbcspec/*.lua
 
 clean:
 	rm -rf ./*.o ./*.so
