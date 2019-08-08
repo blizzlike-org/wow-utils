@@ -120,14 +120,37 @@ static int ldbc_get_record(lua_State *L) {
   return 1;
 }
 
-static int ldbc_get_string(lua_State *L) {
+static int ldbc_get_next_string(lua_State *L) {
   ldbc_stringblock_userdata_t *udata =
     (ldbc_stringblock_userdata_t *) luaL_checkudata(L, 1, "dbcstringblock");
   uint32_t l = dbc_sizeof_string(&udata->stringblock);
   unsigned char field[l];
-  if(dbc_read_string(udata->dbc, &udata->stringblock, &field[0]) != 0) {
+  if(dbc_read_next_string(udata->dbc, &udata->stringblock, &field[0]) != 0) {
     lua_pushnil(L);
     lua_pushstring(L, "cannot read string from stringblock");
+    return 2;
+  }
+
+  lua_pushstring(L, field);
+  return 1;
+}
+
+static int ldbc_get_string(lua_State *L) {
+  ldbc_record_userdata_t *udata =
+    (ldbc_record_userdata_t *) luaL_checkudata(L, 1, "dbcrecord");
+  uint32_t offset = 0;
+  uint32_t l = 0;
+  if(dbc_read_uint(udata->dbc, &udata->record, &offset) != 0) {
+    lua_pushnil(L);
+    lua_pushstring(L, "cannot read string offset from record");
+    return 2;
+  }
+
+  l = dbc_strlen(udata->dbc, offset);
+  unsigned char field[l + 1];
+  if(dbc_read_string(udata->dbc, offset, &field[0], l + 1) != 0) {
+    lua_pushnil(L);
+    lua_pushstring(L, "cannot read string");
     return 2;
   }
 
@@ -215,6 +238,7 @@ int luaopen_dbc(lua_State *L) {
     static struct luaL_Reg dbcrecord_methods[] = {
       { "get_int", ldbc_get_int },
       { "get_raw", ldbc_get_raw },
+      { "get_string", ldbc_get_string },
       { "get_uint", ldbc_get_uint },
       { NULL, NULL }
     };
@@ -225,7 +249,7 @@ int luaopen_dbc(lua_State *L) {
 
   if(luaL_newmetatable(L, "dbcstringblock")) {
     static struct luaL_Reg dbcstringblock_methods[] = {
-      { "get_string", ldbc_get_string },
+      { "get_string", ldbc_get_next_string },
       { NULL, NULL }
     };
     lua_pushvalue(L, -1);
