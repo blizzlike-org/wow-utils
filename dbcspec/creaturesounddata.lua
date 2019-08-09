@@ -1,0 +1,38 @@
+return {
+  [5875] = {
+    fcount = 30,
+    rsize = 120,
+    fields = {
+      { name = "id", type = "uint32_t", count = 1 },
+      { name = "soundExertion", type = "uint32_t", count = 1 },
+      { name = "soundExertionCritical", type = "uint32_t", count = 1 },
+      { name = "soundInjury", type = "uint32_t", count = 1 },
+      { name = "soundInjuryCritical", type = "uint32_t", count = 1 },
+      { name = "soundInjuryCrushingBlow", type = "uint32_t", count = 1 },
+      { name = "soundDeath", type = "uint32_t", count = 1 },
+      { name = "soundStun", type = "uint32_t", count = 1 },
+      { name = "soundStand", type = "uint32_t", count = 1 },
+      { name = "soundFootstep", type = "uint32_t", count = 1 },
+      { name = "soundAggro", type = "uint32_t", count = 1 },
+      { name = "soundWingFlap", type = "uint32_t", count = 1 },
+      { name = "soundWingGlide", type = "uint32_t", count = 1 },
+      { name = "soundAlert", type = "uint32_t", count = 1 },
+      { name = "soundFidget", type = "uint32_t", count = 1 },
+      { name = "customAttack", type = "uint32_t", count = 1 },
+      { name = "NPCSound", type = "uint32_t", count = 1 },
+      { name = "loopSound", type = "uint32_t", count = 1 },
+      { name = "creatureImpactType", type = "int32_t", count = 1 },
+      { name = "soundJumpStart", type = "uint32_t", count = 1 },
+      { name = "soundJumpEnd", type = "uint32_t", count = 1 },
+      { name = "soundPetAttack", type = "uint32_t", count = 1 },
+      { name = "soundPetOrder", type = "uint32_t", count = 1 },
+      { name = "soundPetDismiss", type = "uint32_t", count = 1 },
+      { name = "fidgetDelaySecondsMin", type = "int32_t", count = 1 },
+      { name = "fidgetDelaySecondsMax", type = "int32_t", count = 1 },
+      { name = "birthSound", type = "uint32_t", count = 1 },
+      { name = "spellCastDirectedSound", type = "uint32_t", count = 1 },
+      { name = "submergeSound", type = "uint32_t", count = 1 },
+      { name = "submergedSound", type = "uint32_t", count = 1 },
+    }
+  }
+}
