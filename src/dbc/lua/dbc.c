@@ -89,16 +89,18 @@ static int ldbc_get_int(lua_State *L) {
 static int ldbc_get_raw(lua_State *L) {
   ldbc_record_userdata_t *udata = 
     (ldbc_record_userdata_t *) luaL_checkudata(L, 1, "dbcrecord");
-  unsigned char field[5], hex[9];
+  uint32_t l = luaL_checknumber(L, 2) * sizeof(unsigned char);
+  uint32_t lhex = l * 2 + (sizeof(unsigned char));
+  unsigned char field[l + 1], hex[lhex];
   int i;
-  if(dbc_read_raw(udata->dbc, &udata->record, &field[0]) != 0) {
+  if(dbc_read_raw(udata->dbc, &udata->record, &field[0], l) != 0) {
     lua_pushnil(L);
     lua_pushstring(L, "cannot read raw values from record");
     return 2;
   }
 
-  memset(&hex[0], 0, sizeof(char) * 9);
-  for(i = 0; i < 4; ++i) {
+  memset(&hex[0], 0, lhex);
+  for(i = 0; i < l; ++i) {
     sprintf(hex + 2 * i, "%02x", field[i]);
   }
 

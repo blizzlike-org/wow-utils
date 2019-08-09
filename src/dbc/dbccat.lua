@@ -24,7 +24,7 @@ function _M.parse_record(self, record, header)
   local i = 0
   repeat
     local field, err
-    field, err = record:get_raw()
+    field, err = record:get_raw(1)
     if err then field = err end
     if res:len() == 0 then
       res = field
@@ -32,7 +32,7 @@ function _M.parse_record(self, record, header)
       res = string.format("%s,%s", res, field)
     end
     i = i + 1
-  until i == header.fcount
+  until i == header.rsize
   return res
 end
 
@@ -48,7 +48,7 @@ function _M.parse_record_blueprint(self, record, header, blueprint)
         field = string.format("%f", field)
       end
       if v.type == "hex" then
-        field, err = record:get_raw()
+        field, err = record:get_raw(v.size)
         field = string.format("%s", field)
       end
       if v.type == "int32_t" then

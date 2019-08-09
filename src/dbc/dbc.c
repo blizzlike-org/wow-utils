@@ -104,16 +104,16 @@ int dbc_read_next_string(dbc_file_t *dbc, dbc_stringblock_t *stringblock, unsign
   return 0;
 }
 
-int dbc_read_raw(dbc_file_t *dbc, dbc_record_t *record, unsigned char *field) {
+int dbc_read_raw(dbc_file_t *dbc, dbc_record_t *record, unsigned char *field, uint32_t l) {
   if(record->p == NULL)
     return -1;
 
-  if((dbc->header.rsize - record->_offset) < sizeof(char) * 4)
+  if((dbc->header.rsize - record->_offset) < sizeof(char) * l)
     return -2;
 
-  memset(field, 0, sizeof(char) * 5);
-  memcpy(field, record->p + record->_offset, sizeof(char) * 4);
-  record->_offset += sizeof(char) * 4;
+  memset(field, 0, sizeof(char) * (l + 1));
+  memcpy(field, record->p + record->_offset, sizeof(char) * l);
+  record->_offset += sizeof(char) * l;
   return 0;
 }
 
