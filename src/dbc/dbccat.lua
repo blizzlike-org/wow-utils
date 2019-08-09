@@ -52,15 +52,19 @@ function _M.parse_record_blueprint(self, record, header, blueprint)
         field = string.format("%s", field)
       end
       if v.type == "int32_t" then
-        field, err = record:get_int()
+        field, err = record:get_int32()
         field = string.format("%i", field)
       end
       if v.type == "string" then
         field, err = record:get_string()
         field = string.format("\"%s\"", field)
       end
+      if v.type == "uint8_t" then
+        field, err = record:get_uint8()
+        field = string.format("%u", field)
+      end
       if v.type == "uint32_t" then
-        field, err = record:get_uint()
+        field, err = record:get_uint32()
         field = string.format("%u", field)
       end
       if err then field = err end

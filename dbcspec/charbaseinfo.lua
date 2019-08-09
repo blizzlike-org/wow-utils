@@ -3,8 +3,8 @@ return {
     fcount = 2,
     rsize = 2,
     fields = {
-      { name = "race", type = "hex", size = 1, count = 1 },
-      { name = "class", type = "hex", size = 1, count = 1 }
+      { name = "race", type = "uint8_t", count = 1 },
+      { name = "class", type = "uint8_t", count = 1 }
     }
   }
 }

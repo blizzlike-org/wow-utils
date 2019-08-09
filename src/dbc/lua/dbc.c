@@ -72,13 +72,13 @@ static int ldbc_get_header(lua_State *L) {
   return 5;
 }
 
-static int ldbc_get_int(lua_State *L) {
+static int ldbc_get_int32(lua_State *L) {
   ldbc_record_userdata_t *udata =
     (ldbc_record_userdata_t *) luaL_checkudata(L, 1, "dbcrecord");
   int32_t field = 0;
-  if(dbc_read_int(udata->dbc, &udata->record, &field) != 0) {
+  if(dbc_read_int32(udata->dbc, &udata->record, &field) != 0) {
     lua_pushnil(L);
-    lua_pushstring(L, "cannot read int from record");
+    lua_pushstring(L, "cannot read int32 from record");
     return 2;
   }
 
@@ -156,7 +156,7 @@ static int ldbc_get_string(lua_State *L) {
     (ldbc_record_userdata_t *) luaL_checkudata(L, 1, "dbcrecord");
   uint32_t offset = 0;
   uint32_t l = 0;
-  if(dbc_read_uint(udata->dbc, &udata->record, &offset) != 0) {
+  if(dbc_read_uint32(udata->dbc, &udata->record, &offset) != 0) {
     lua_pushnil(L);
     lua_pushstring(L, "cannot read string offset from record");
     return 2;
@@ -199,13 +199,27 @@ static int ldbc_get_stringblock(lua_State *L) {
   return 1;
 }
 
-static int ldbc_get_uint(lua_State *L) {
+static int ldbc_get_uint8(lua_State *L) {
+  ldbc_record_userdata_t *udata =
+    (ldbc_record_userdata_t *) luaL_checkudata(L, 1, "dbcrecord");
+  uint8_t field = 0;
+  if(dbc_read_uint8(udata->dbc, &udata->record, &field) != 0) {
+    lua_pushnil(L);
+    lua_pushstring(L, "cannot read uint8 from record");
+    return 2;
+  }
+
+  lua_pushnumber(L, field);
+  return 1;
+}
+
+static int ldbc_get_uint32(lua_State *L) {
   ldbc_record_userdata_t *udata =
     (ldbc_record_userdata_t *) luaL_checkudata(L, 1, "dbcrecord");
   uint32_t field = 0;
-  if(dbc_read_uint(udata->dbc, &udata->record, &field) != 0) {
+  if(dbc_read_uint32(udata->dbc, &udata->record, &field) != 0) {
     lua_pushnil(L);
-    lua_pushstring(L, "cannot read uint from record");
+    lua_pushstring(L, "cannot read uint32 from record");
     return 2;
   }
 
@@ -253,10 +267,11 @@ int luaopen_dbc(lua_State *L) {
   if(luaL_newmetatable(L, "dbcrecord")) {
     static struct luaL_Reg dbcrecord_methods[] = {
       { "get_float", ldbc_get_float },
-      { "get_int", ldbc_get_int },
+      { "get_int32", ldbc_get_int32 },
       { "get_raw", ldbc_get_raw },
       { "get_string", ldbc_get_string },
-      { "get_uint", ldbc_get_uint },
+      { "get_uint8", ldbc_get_uint8 },
+      { "get_uint32", ldbc_get_uint32 },
       { NULL, NULL }
     };
     lua_pushvalue(L, -1);

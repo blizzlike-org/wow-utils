@@ -78,7 +78,7 @@ int dbc_read_header(dbc_file_t *dbc) {
   return 0;
 }
 
-int dbc_read_int(dbc_file_t *dbc, dbc_record_t *record, int32_t *field) {
+int dbc_read_int32(dbc_file_t *dbc, dbc_record_t *record, int32_t *field) {
   if(record->p == NULL)
     return -1;
 
@@ -180,7 +180,19 @@ int dbc_read_stringblock(dbc_file_t *dbc, dbc_stringblock_t *stringblock) {
   return 0;
 }
 
-int dbc_read_uint(dbc_file_t *dbc, dbc_record_t *record, uint32_t *field) {
+int dbc_read_uint8(dbc_file_t *dbc, dbc_record_t *record, uint8_t *field) {
+  if(record->p == NULL)
+    return -1;
+
+  if((dbc->header.rsize - record->_offset) < sizeof(uint8_t))
+    return -2;
+
+  memcpy(field, record->p + record->_offset, sizeof(uint8_t));
+  record->_offset += sizeof(uint8_t);
+  return 0;
+}
+
+int dbc_read_uint32(dbc_file_t *dbc, dbc_record_t *record, uint32_t *field) {
   if(record->p == NULL)
     return -1;
 

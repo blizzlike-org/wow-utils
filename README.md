@@ -25,6 +25,7 @@ The result size as well as the number of results is defined in the header.
 
 Known field types are:
 
+* uint8_t
 * uint32_t
 * int32_t
 * float (4 byte)
