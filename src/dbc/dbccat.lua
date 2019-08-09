@@ -24,12 +24,7 @@ function _M.parse_record(self, record, header)
   local i = 0
   repeat
     local field, err
-    if self.args.raw then
-      field, err = record:get_raw()
-    else
-      field, err = record:get_int()
-      field = string.format("%i", field)
-    end
+    field, err = record:get_raw()
     if err then field = err end
     if res:len() == 0 then
       res = field
@@ -51,6 +46,10 @@ function _M.parse_record_blueprint(self, record, header, blueprint)
       if v.type == "float" then
         field, err = record:get_float()
         field = string.format("%f", field)
+      end
+      if v.type == "hex" then
+        field, err = record:get_raw()
+        field = string.format("%s", field)
       end
       if v.type == "int32_t" then
         field, err = record:get_int()
@@ -117,12 +116,9 @@ function _M.read_dbc(self, file)
     ssize = ssize
   }
   if self.args.verbose then
-    print(string.format("> dbc file header"))
-    print(string.format("signature: %s", signature))
-    print(string.format("results: %s", rcount))
-    print(string.format("fields/result: %s", fcount))
-    print(string.format("result size: %s", rsize))
-    print(string.format("stringblock size: %s", ssize))
+    print(string.format(
+      "[I] signature: %s, results: %u, fields: %u, rsize: %u, ssize: %u",
+      signature, rcount, fcount, rsize, ssize))
   end
 
   local specname = file:match("^.+/(.+).dbc$"):lower()
@@ -133,7 +129,7 @@ function _M.read_dbc(self, file)
   local blueprint
   if modload then
     for k, v in pairs(spec) do
-      if v.rcount == rcount and v.fcount == fcount and v.rsize == rsize then
+      if v.fcount == fcount and v.rsize == rsize then
         if self.args.verbose then
           print(string.format("[I] Using spec for client build %d", k))
         end
