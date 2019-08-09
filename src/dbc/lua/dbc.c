@@ -72,6 +72,20 @@ static int ldbc_get_header(lua_State *L) {
   return 5;
 }
 
+static int ldbc_get_int8(lua_State *L) {
+  ldbc_record_userdata_t *udata =
+    (ldbc_record_userdata_t *) luaL_checkudata(L, 1, "dbcrecord");
+  int8_t field = 0;
+  if(dbc_read_int8(udata->dbc, &udata->record, &field) != 0) {
+    lua_pushnil(L);
+    lua_pushstring(L, "cannot read int32 from record");
+    return 2;
+  }
+
+  lua_pushnumber(L, field);
+  return 1;
+}
+
 static int ldbc_get_int32(lua_State *L) {
   ldbc_record_userdata_t *udata =
     (ldbc_record_userdata_t *) luaL_checkudata(L, 1, "dbcrecord");
@@ -267,6 +281,7 @@ int luaopen_dbc(lua_State *L) {
   if(luaL_newmetatable(L, "dbcrecord")) {
     static struct luaL_Reg dbcrecord_methods[] = {
       { "get_float", ldbc_get_float },
+      { "get_int8", ldbc_get_int8 },
       { "get_int32", ldbc_get_int32 },
       { "get_raw", ldbc_get_raw },
       { "get_string", ldbc_get_string },

@@ -27,6 +27,7 @@ Known field types are:
 
 * uint8_t
 * uint32_t
+* int8_t
 * int32_t
 * float (4 byte)
 * uint32_t as offset relative to the beginning of the stringblock
