@@ -52,4 +52,4 @@ It starts with a `\0` even if there are no strings stored in a dbc file.
 
 * [cmangos](https://github.com/cmangos/issues/wiki/Dbc-files)
 * [getmangos](https://mangoszero-docs.readthedocs.io/en/latest/file-formats/dbc/index.html)
-* [shagu](https://gitlab.com/shagu/pfQuest/blob/master/toolbox/load-client-data.sh)
+* [shagu](https://github.com/shagu/pfQuest/blob/master/toolbox/load-client-data.sh)
