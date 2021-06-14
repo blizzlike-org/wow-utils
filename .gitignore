@@ -2,3 +2,4 @@
 *.o
 *.so
 /dbccat
+/mkunitfieldbyte0
