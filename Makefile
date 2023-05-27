@@ -1,5 +1,5 @@
 ifndef LUA
-LUA = lua53
+LUA = lua54
 endif
 
 CFLAGS += -fpic -I./src/dbc/include
