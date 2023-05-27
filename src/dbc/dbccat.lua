@@ -125,7 +125,7 @@ function _M.read_dbc(self, file)
       signature, rcount, fcount, rsize, ssize))
   end
 
-  local specname = file:match("^.+/(.+).dbc$"):lower()
+  local specname = file:match("([^/]+)$"):match("(%w+).*"):lower()
   if self.args.verbose then
     print(string.format("[I] Loading specfile %s", specname))
   end
