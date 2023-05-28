@@ -18,7 +18,7 @@ dbc.so: dbc.o
 	${CC} -o ./luadbc.o -c ./src/dbc/lua/dbc.c ${CFLAGS} $(shell pkg-config --cflags ${LUA})
 	${CC} -o ./dbc.so ./luadbc.o ./dbc.o ${CFLAGS} -shared ${LDFLAGS} $(shell pkg-config --libs ${LUA})
 
-dbccat:
+dbccat: dbc.so
 	install -D -m 0755 src/dbc/dbccat.lua dbccat
 	sed -i "s_/usr/bin/env lua_${interpreter}_" dbccat
 
