@@ -2,6 +2,42 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+enum classes {
+  WARRIOR = 1,
+  PALADIN = 2,
+  HUNTER = 3,
+  ROGUE = 4,
+  PRIEST = 5,
+  SHAMAN = 7,
+  MAGE = 8,
+  WARLOCK = 9,
+  DRUID = 11
+};
+
+enum gender {
+  MALE = 0,
+  FEMALE = 1
+};
+
+enum powertype {
+  MANA = 0,
+  RAGE = 1,
+  ENERGY = 3
+};
+
+enum races {
+  HUMAN = 1,
+  ORC = 2,
+  DWARF = 3,
+  NIGHTELF = 4,
+  UNDEAD = 5,
+  TAUREN = 6,
+  GNOME = 7,
+  TROLL = 8,
+  BLOODELF = 10,
+  DRAENEI = 11
+};
+
 int getpowertype(uint8_t c);
 
 void getField(uint8_t r, uint8_t c, uint8_t g) {
@@ -16,32 +52,32 @@ int getpowertype(uint8_t c) {
   uint8_t p;
 
   switch(c) {
-    case 1: // warrior
-      p = 1;
+    case WARRIOR:
+      p = RAGE;
       break;
-    case 2: // paladin
-      p = 0;
+    case PALADIN:
+      p = MANA;
       break;
-    case 3: // hunter
-      p = 0;
+    case HUNTER:
+      p = MANA;
       break;
-    case 4: // rogue
-      p = 3;
+    case ROGUE:
+      p = ENERGY;
       break;
-    case 5: // priest
-      p = 0;
+    case PRIEST:
+      p = MANA;
       break;
-    case 7: // shaman
-      p = 0;
+    case SHAMAN:
+      p = MANA;
       break;
-    case 8: // mage
-      p = 0;
+    case MAGE:
+      p = MANA;
       break;
-    case 9: // warlock
-      p = 0;
+    case WARLOCK:
+      p = MANA;
       break;
-    case 11: // druid
-      p = 0;
+    case DRUID:
+      p = MANA;
       break;
   }
 
@@ -50,43 +86,43 @@ int getpowertype(uint8_t c) {
 
 int main(int argc, const char **argv) {
   uint8_t r[] = {
-     1, // human
-     2, // orc
-     3, // dwarf
-     4, // nightelf
-     5, // undead
-     6, // tauren
-     7, // gnome
-     8, // troll
-    10, // bloodelf
-    11  // draenei
+    HUMAN,
+    ORC,
+    DWARF,
+    NIGHTELF,
+    UNDEAD,
+    TAUREN,
+    GNOME,
+    TROLL,
+    BLOODELF,
+    DRAENEI
   };
   uint8_t c[] = {
-     1, // warrior
-     2, // paladin
-     3, // hunter
-     4, // rogue
-     5, // priest
-     7, // shaman
-     8, // mage
-     9, // warlock
-    11  // druid
+    WARRIOR,
+    PALADIN,
+    HUNTER,
+    ROGUE,
+    PRIEST,
+    SHAMAN,
+    MAGE,
+    WARLOCK,
+    DRUID
   };
   int i = 0, j = 0;
 
   for (i = 0; i < 10; ++i) {
     for (j = 0; j < 9; ++j) {
-      if (c[j] == 1 && r[i] != 10 ||                                                       // warrior
-          c[j] == 2 && (r[i] == 1 || r[i] == 3 || r[i] == 10 || r[i] == 11) ||             // paladin
-          c[j] == 3 && r[i] != 1 && r[i] != 5 && r[i] != 7 ||                              // hunter
-          c[j] == 4 && r[i] != 6 && r[i] != 11 ||                                          // rogue
-          c[j] == 5 && r[i] != 2 && r[i] != 6 && r[i] != 7 ||                              // priest
-          c[j] == 7 && (r[i] == 2 || r[i] == 6 || r[i] == 8 || r[i] == 11) ||              // shaman
-          c[j] == 8 && r[i] != 2 && r[i] != 3 && r[i] != 4 && r[i] != 6 ||                 // mage
-          c[j] == 9 && (r[i] == 1 || r[i] == 2 || r[i] == 5 || r[i] == 7 || r[i] == 10) || // warlock
-          c[j] == 11 && (r[i] == 4 || r[i] == 6)) {                                        // druid
-	getField(r[i], c[j], 0);
-	getField(r[i], c[j], 1);
+      if (c[j] == WARRIOR && r[i] != BLOODELF ||
+          c[j] == PALADIN && (r[i] == HUMAN || r[i] == DWARF || r[i] == BLOODELF || r[i] == DRAENEI) ||
+          c[j] == HUNTER  && r[i] != HUMAN && r[i] != UNDEAD && r[i] != GNOME ||
+          c[j] == ROGUE && r[i] != TAUREN && r[i] != DRAENEI ||
+          c[j] == PRIEST && r[i] != ORC && r[i] != TAUREN && r[i] != GNOME ||
+          c[j] == SHAMAN && (r[i] == ORC || r[i] == TAUREN || r[i] == TROLL || r[i] == DRAENEI) ||
+          c[j] == MAGE && r[i] != ORC && r[i] != DWARF && r[i] != NIGHTELF && r[i] != TAUREN ||
+          c[j] == WARLOCK && (r[i] == HUMAN || r[i] == ORC || r[i] == UNDEAD || r[i] == GNOME || r[i] == BLOODELF) ||
+          c[j] == DRUID && (r[i] == NIGHTELF || r[i] == TAUREN)) {
+	getField(r[i], c[j], MALE);
+	getField(r[i], c[j], FEMALE);
       }
     }
   }
