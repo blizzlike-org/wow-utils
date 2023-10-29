@@ -45,7 +45,7 @@ function _M.parse_record_blueprint(self, record, header, blueprint)
       local field, err
       if v.type == "float" then
         field, err = record:get_float()
-        field = string.format("%f", field)
+        field = string.format("%.8f", field)
       end
       if v.type == "hex" then
         field, err = record:get_raw(v.size)
