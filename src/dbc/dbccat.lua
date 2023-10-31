@@ -19,6 +19,43 @@ function _M.parse_args(self)
   end
 end
 
+function _M.load_blueprint(self, name, header)
+  if self.args.verbose then
+    print(string.format("[I] Loading specfile %s", name))
+  end
+  local modload, specs = pcall(require, "dbcspec/" .. name)
+
+  local fields = {}
+  local blueprint = { build = 0, precission = 0, fields = {} }
+  if not modload then return blueprint end
+
+  local fields = specs.fields
+  specs.fields = nil
+
+  for buildno, spec in pairs(specs) do
+    local precission = 1
+    if spec.rsize == header.rsize then precission = precission + 33 end
+    if spec.rcount == header.rcount then precission = precission + 33 end
+    if spec.ssize == header.ssize then precission = precission + 33 end
+    if #spec.fields ~= header.fcount then precission = 0 end
+
+    if precission > 1 and blueprint.precission < precission then
+      blueprint.build = buildno
+      blueprint.precission = precission
+      for k, v in pairs(spec.fields) do
+        for _, n in pairs(fields) do
+          if v == n.name then
+            blueprint.fields[k] = n
+            if not blueprint.fields[k].count then blueprint.fields[k].count = 1 end
+          end
+        end
+      end
+    end
+  end
+
+  return blueprint
+end
+
 function _M.parse_record(self, record, header)
   local res = ""
   local i = 0
@@ -37,43 +74,36 @@ function _M.parse_record(self, record, header)
 end
 
 function _M.parse_record_blueprint(self, record, header, blueprint)
-  local res = ""
+  local res = {}
 
-  for _, v in pairs(blueprint) do
-    local i = 0
-    while i < v.count do
+  for k, v in pairs(blueprint.fields) do
+    if k > 0 then
+      local i = 1
       local field, err
-      if v.type == "float" then
-        field, err = record:get_float()
-        field = string.format("%.8f", field)
+      while i <= v.count do
+        if v.type == "float" then
+          field, err = record:get_float()
+        end
+        if v.type == "hex" then
+          field, err = record:get_raw(v.size)
+        end
+        if v.type == "int32_t" then
+          field, err = record:get_int32()
+        end
+        if v.type == "string" then
+          field, err = record:get_string()
+          field = string.format("\"%s\"", field)
+        end
+        if v.type == "uint8_t" then
+          field, err = record:get_uint8()
+        end
+        if v.type == "uint32_t" then
+          field, err = record:get_uint32()
+        end
+        if err then field = err end
+        res[i] = field
+        i = i + 1
       end
-      if v.type == "hex" then
-        field, err = record:get_raw(v.size)
-        field = string.format("%s", field)
-      end
-      if v.type == "int32_t" then
-        field, err = record:get_int32()
-        field = string.format("%i", field)
-      end
-      if v.type == "string" then
-        field, err = record:get_string()
-        field = string.format("\"%s\"", field)
-      end
-      if v.type == "uint8_t" then
-        field, err = record:get_uint8()
-        field = string.format("%u", field)
-      end
-      if v.type == "uint32_t" then
-        field, err = record:get_uint32()
-        field = string.format("%u", field)
-      end
-      if err then field = err end
-      if res:len() == 0 then
-        res = field
-      else
-        res = string.format("%s,%s", res, field)
-      end
-      i = i + 1
     end
   end
 
@@ -82,7 +112,7 @@ end
 
 function _M.print_headline(self, blueprint)
   local headline = ""
-  for _, v in pairs(blueprint) do
+  for _, v in pairs(blueprint.fields) do
     local i = 0
     while i < v.count do
       local title = v.name
@@ -98,6 +128,15 @@ function _M.print_headline(self, blueprint)
     end
   end
   print(headline)
+end
+
+function _M.print_records(records)
+  local separator = 0
+  for _, v in pairs(records) do
+    if separator == 1 then print(",") end
+    print(v)
+    if separator == 0 then separator = 1 end
+  end
 end
 
 function _M.read_dbc(self, file)
@@ -121,44 +160,34 @@ function _M.read_dbc(self, file)
   }
   if self.args.verbose then
     print(string.format(
-      "[I] signature: %s, results: %u, fields: %u, rsize: %u, ssize: %u",
-      signature, rcount, fcount, rsize, ssize))
+      "[I] signature: %s, results: %u, fields: %u, rcount: %u, rsize: %u, ssize: %u",
+      signature, rcount, fcount, rcount, rsize, ssize))
   end
 
   local specname = file:match("([^/]+)$"):match("(%w+).*"):lower()
-  if self.args.verbose then
-    print(string.format("[I] Loading specfile %s", specname))
-  end
-  local modload, spec = pcall(require, "dbcspec." .. specname)
-  local blueprint
-  if modload then
-    for k, v in pairs(spec) do
-      if v.fcount == fcount and v.rsize == rsize then
-        if self.args.verbose then
-          print(string.format("[I] Using spec for client build %d", k))
-        end
-        blueprint = v.fields
-      end
+  local blueprint = self:load_blueprint(specname, header)
+  if blueprint.build > 0 then
+    if self.args.verbose then
+      print(string.format("[I] Using spec for client build %d (precission: %d)", blueprint.build, blueprint.precission))
     end
-  end
-
-  if blueprint then
     self:print_headline(blueprint)
   end
 
   local i = 0
   repeat
+    local records = {}
     local record, err = dbcfile:get_record()
     if err then
       print(string.format("[E] %s", err))
     else
-      if self.args.raw or not blueprint then
-        print(self:parse_record(record, header))
+      if self.args.raw or blueprint.build == 0 then
+        records[i] = self:parse_record(record, header)
       else
-        print(self:parse_record_blueprint(record, header, blueprint))
+        records[i] = self:parse_record_blueprint(record, header, blueprint)
       end
     end
     i = i + 1
+    self:print_records(records)
   until i == rcount
 
   dbcfile:close()

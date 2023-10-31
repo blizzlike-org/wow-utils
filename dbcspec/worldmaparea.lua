@@ -1,16 +1,18 @@
 return {
   [5875] = {
-    fcount = 8,
     rsize = 32,
-    fields = {
-      { name = "id", type = "uint32_t", count = 1 },
-      { name = "mapID", type = "uint32_t", count = 1 },
-      { name = "areaID", type = "uint32_t", count = 1 },
-      { name = "areaName", type = "string", count = 1 },
-      { name = "locLeft", type = "float", count = 1 },
-      { name = "locRight", type = "float", count = 1 },
-      { name = "locTop", type = "float", count = 1 },
-      { name = "locBottom", type = "float", count = 1 },
-    }
+    rcount = 125,
+    ssize = 1479,
+    fields = { "id", "mapID", "areaID", "areaName", "locLeft", "locRight", "locTop", "locBottom" }
+  },
+  fields = {
+    { name = "id", type = "uint32_t" },
+    { name = "mapID", type = "uint32_t" },
+    { name = "areaID", type = "uint32_t" },
+    { name = "areaName", type = "string" },
+    { name = "locLeft", type = "float" },
+    { name = "locRight", type = "float" },
+    { name = "locTop", type = "float" },
+    { name = "locBottom", type = "float" }
   }
 }
