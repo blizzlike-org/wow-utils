@@ -76,34 +76,34 @@ end
 function _M.parse_record_blueprint(self, record, header, blueprint)
   local res = {}
 
-  for k, v in pairs(blueprint.fields) do
-    if k > 0 then
-      local i = 1
+  local i = 1
+  for _, v in pairs(blueprint.fields) do
+    local j = 1
+    while j <= v.count do
       local field, err
-      while i <= v.count do
-        if v.type == "float" then
-          field, err = record:get_float()
-        end
-        if v.type == "hex" then
-          field, err = record:get_raw(v.size)
-        end
-        if v.type == "int32_t" then
-          field, err = record:get_int32()
-        end
-        if v.type == "string" then
-          field, err = record:get_string()
-          field = string.format("\"%s\"", field)
-        end
-        if v.type == "uint8_t" then
-          field, err = record:get_uint8()
-        end
-        if v.type == "uint32_t" then
-          field, err = record:get_uint32()
-        end
-        if err then field = err end
-        res[i] = field
-        i = i + 1
+      if v.type == "float" then
+        field, err = record:get_float()
       end
+      if v.type == "hex" then
+        field, err = record:get_raw(v.size)
+      end
+      if v.type == "int32_t" then
+        field, err = record:get_int32()
+      end
+      if v.type == "string" then
+        field, err = record:get_string()
+        field = string.format("\"%s\"", field)
+      end
+      if v.type == "uint8_t" then
+        field, err = record:get_uint8()
+      end
+      if v.type == "uint32_t" then
+        field, err = record:get_uint32()
+      end
+      if err then field = err end
+      res[i] = field
+      i = i + 1
+      j = j + 1
     end
   end
 
@@ -130,13 +130,14 @@ function _M.print_headline(self, blueprint)
   print(headline)
 end
 
-function _M.print_records(records)
+function _M.print_records(self, records)
   local separator = 0
-  for _, v in pairs(records) do
-    if separator == 1 then print(",") end
-    print(v)
+  for k, v in pairs(records) do
+    if separator == 1 then io.write(",") end
+    io.write(v)
     if separator == 0 then separator = 1 end
   end
+  io.write("\n")
 end
 
 function _M.read_dbc(self, file)
@@ -175,19 +176,17 @@ function _M.read_dbc(self, file)
 
   local i = 0
   repeat
-    local records = {}
     local record, err = dbcfile:get_record()
     if err then
       print(string.format("[E] %s", err))
     else
       if self.args.raw or blueprint.build == 0 then
-        records[i] = self:parse_record(record, header)
+        self:print_records(self:parse_record(record, header))
       else
-        records[i] = self:parse_record_blueprint(record, header, blueprint)
+        self:print_records(self:parse_record_blueprint(record, header, blueprint))
       end
     end
     i = i + 1
-    self:print_records(records)
   until i == rcount
 
   dbcfile:close()
